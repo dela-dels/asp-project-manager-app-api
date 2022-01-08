@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManagerApp.Data;
+using ProjectManagerApp.DTOS.Projects;
 using ProjectManagerApp.Models;
 
 namespace ProjectManagerApp.Controllers
@@ -17,32 +19,64 @@ namespace ProjectManagerApp.Controllers
     {
         private readonly ProjectManagerAppContext _context;
 
-        public ProjectController(ProjectManagerAppContext context)
+        private readonly IMapper _mapper;
+
+        public ProjectController(ProjectManagerAppContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
+
+
+        // [HttpGet("api/projects")]
+        // [Produces("application/json")]
+        // public async Task<ActionResult<IEnumerable<Project>>> Index()
+        // {
+        //     return await _context.Projects.ToListAsync();
+        //     //return await _context.Projects.Include(p => p.Sprint).ToListAsync();
+        // }
 
 
         [HttpGet("api/projects")]
-        public async Task<ActionResult<IEnumerable<Project>>> Index()
+        [Produces("application/json")]
+        public async Task<ActionResult<ProjectDTO[]>> Index()
         {
-            return  await _context.Projects.Include(project => project.Sprint).ToListAsync();
+            var projects = await _context.Projects.Include(p => p.Sprint).AsNoTracking().ToListAsync();
+            //var projects = await _context.Projects.ToListAsync();
 
-           // return await projects.ToListAsync();
+            return _mapper.Map<ProjectDTO[]>(projects);
         }
 
         // GET: api/Project/5
+        //[HttpGet("api/projects/{id}")]
+        //public async Task<ActionResult<Project>> Show(long id)
+        //{
+        //    //var project = await _context.Projects.FindAsync(id);
+
+        //    var project = await _context.Projects.Include(project => project.Sprint).AsNoTracking().FirstAsync();
+
+
+        //    if (project == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return project;
+        //}
+
         [HttpGet("api/projects/{id}")]
-        public async Task<ActionResult<Project>> Show(long id)
+        public async Task<ActionResult<ProjectDTO>> Show(long id)
         {
-            var project = await _context.Projects.FindAsync(id);
+
+            var project = await _context.Projects.Include(project => project.Sprint).AsNoTracking().FirstAsync();
+
 
             if (project == null)
             {
                 return NotFound();
             }
 
-            return project;
+            return _mapper.Map<ProjectDTO>(project);
         }
 
         // PUT: api/Project/5

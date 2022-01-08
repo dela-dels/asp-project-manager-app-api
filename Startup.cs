@@ -31,12 +31,17 @@ namespace ProjectManagerApp
 
             services.AddControllers();
 
+            // This service injects and configures the database connection
+            // services user the Projects Database Context class
             services.AddDbContext<ProjectManagerAppContext>(options =>
 
                 options.UseSqlite(Configuration.GetConnectionString("Default"))
              );
 
-            //services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
+            services.AddAutoMapper(typeof(Startup));
+
+            services.AddControllers().AddNewtonsoftJson(options =>
+              options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
